@@ -581,18 +581,14 @@
         <div class="filter-section">
             <label class="filter-label" for="catchment-filter">Filter by Catchment:</label>
             <select id="catchment-filter" class="filter-dropdown" onchange="filterByCatchment(this.value)">
-                <option value="">All Catchments</option><option value="Aorere">Aorere</option>
-<option value="Buller">Buller</option>
+                <option value="">All Catchments</option><option value="Golden Bay">Golden Bay</option>
 <option value="Motueka">Motueka</option>
-<option value="Moutere">Moutere</option>
-<option value="Nelson">Nelson</option>
-<option value="Riwaka">Riwaka</option>
-<option value="Takaka">Takaka</option>
-<option value="Waimea">Waimea</option>
+<option value="Buller">Buller</option>
+<option value="Eastern Hills">Eastern Hills</option>
             </select>
         </div>
         <div class="data-currency-header">
-            <strong>Data Currency:</strong> 07/30 14:52 NZST
+            <strong>Data Currency:</strong> 07/30 14:55 NZST
         </div>
     </div>
 
@@ -3807,9 +3803,17 @@
         }
         
         // Catchment filtering function
-        function filterByCatchment(selectedCatchment) {
+        function filterByCatchment(selectedRegion) {
             // Get all tables
             var tables = document.querySelectorAll(".rain-table, .flow-table");
+            
+            // Define the catchment mapping
+            var catchmentMap = {
+                "Golden Bay": ["Takaka", "Aorere", "Riwaka"],
+                "Motueka": ["Motueka", "Riwaka", "Moutere"],
+                "Buller": ["Buller"],
+                "Eastern Hills": ["Waimea", "Nelson"]
+            };
             
             tables.forEach(function(table) {
                 var rows = table.querySelectorAll("tbody tr");
@@ -3817,37 +3821,29 @@
                 rows.forEach(function(row) {
                     var isHeader = row.classList.contains("catchment-header");
                     var catchmentAttr = row.getAttribute("data-catchment");
-                    var regionAttr = row.getAttribute("data-region");
                     
-                    if (selectedCatchment === "") {
+                    if (selectedRegion === "") {
                         // Show all rows
                         row.classList.remove("filtered-row");
                     } else {
                         if (isHeader) {
-                            // For header rows, check if the header text matches any region that contains the selected catchment
+                            // For header rows, check if the header text matches the selected region
                             var headerText = row.querySelector("td").textContent.trim();
                             var headerRegion = headerText.replace(/^— | —$/g, "");
                             
-                            // Check if this region contains the selected catchment
-                            var shouldShowHeader = false;
-                            if (headerRegion === "Golden Bay" && (selectedCatchment === "Takaka" || selectedCatchment === "Aorere")) {
-                                shouldShowHeader = true;
-                            } else if (headerRegion === "Motueka" && (selectedCatchment === "Motueka" || selectedCatchment === "Riwaka" || selectedCatchment === "Moutere")) {
-                                shouldShowHeader = true;
-                            } else if (headerRegion === "Buller" && selectedCatchment === "Buller") {
-                                shouldShowHeader = true;
-                            } else if (headerRegion === "Eastern Hills" && (selectedCatchment === "Waimea" || selectedCatchment === "Nelson")) {
-                                shouldShowHeader = true;
-                            }
-                            
-                            if (shouldShowHeader) {
+                            if (headerRegion === selectedRegion) {
                                 row.classList.remove("filtered-row");
                             } else {
                                 row.classList.add("filtered-row");
                             }
                         } else {
-                            // For data rows, check catchment attribute
-                            if (catchmentAttr === selectedCatchment) {
+                            // For data rows, check if the catchment belongs to the selected region
+                            var shouldShow = false;
+                            if (catchmentMap[selectedRegion]) {
+                                shouldShow = catchmentMap[selectedRegion].includes(catchmentAttr);
+                            }
+                            
+                            if (shouldShow) {
                                 row.classList.remove("filtered-row");
                             } else {
                                 row.classList.add("filtered-row");
